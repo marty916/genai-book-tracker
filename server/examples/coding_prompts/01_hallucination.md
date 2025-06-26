@@ -1,0 +1,1 @@
+scenarios/halluciation.feature wrtie, generate Python FastAPI code for a /recommend` endpoint that integrates with OpenAI. Implement input handling so that hallucinated recommendations are minimized. If no matching book exists, suggest a related topic or reply with a friendly "no results" message.

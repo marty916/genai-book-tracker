@@ -1,0 +1,6 @@
+openai
+arize-phoenix-otel
+openinference-instrumentation-openai
+pandas
+python-dotenv
+behave
