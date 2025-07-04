@@ -21,3 +21,4 @@ def setup_phoenix(project_name="genai-book-tracker-lab"):
 
 def get_openai_client():
     return OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+                  
