@@ -1,9 +1,9 @@
 # observation/log_to_phoenix.py
-
+import os
 import pandas as pd
 from phoenix_utils import setup_phoenix, get_openai_client
 from dotenv import load_dotenv
-load_dotenv()
+load_dotenv('server/.env')
 
 
 def run_inference_on_test_set(test_set_path):

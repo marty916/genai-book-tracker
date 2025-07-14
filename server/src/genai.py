@@ -1,5 +1,11 @@
+import os
 from typing import Dict, Optional
 from src.observation.phoenix_utils import setup_phoenix, get_openai_client
+
+from dotenv import load_dotenv
+
+# Load environment variables from server/.env
+load_dotenv('server/.env')
 
 # Initialize these as None, set them up on first use
 _tracer_provider = None
@@ -17,8 +23,8 @@ def _ensure_initialized():
     return _openai_client
 
 def ask_llm(prompt: str) -> str:
-    client = _ensure_initialized()
-    response = client.chat.completions.create(
+    openai_client = _ensure_initialized()
+    response = openai_client.chat.completions.create(
         model=OPENAI_MODEL,
         messages=[{"role": "user", "content": prompt}],
         max_tokens=256,

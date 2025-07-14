@@ -1,5 +1,6 @@
 openai
 arize-phoenix-otel
+arize-phoenix[evals]
 openinference-instrumentation-openai
 pandas
 python-dotenv

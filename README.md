@@ -14,3 +14,6 @@ This folder contains scripts and data for logging model inferences and evaluatio
 3. View results and traces in your Phoenix Cloud dashboard.
 
 This code follows SOC/SRP principles: business logic stays in `src/`, evaluation & observability are here.
+
+
+uvicorn main:app --reload

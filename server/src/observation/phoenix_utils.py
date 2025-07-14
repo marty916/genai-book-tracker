@@ -6,7 +6,7 @@ from openinference.instrumentation.openai import OpenAIInstrumentor
 from openai import OpenAI
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv('server/.env')
 
 
 def setup_phoenix(project_name="genai-book-tracker-lab"):
@@ -20,5 +20,7 @@ def setup_phoenix(project_name="genai-book-tracker-lab"):
     return tracer_provider
 
 def get_openai_client():
-    return OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+    return OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+    
                   
