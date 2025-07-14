@@ -11,7 +11,7 @@ load_dotenv('server/.env')
 _tracer_provider = None
 _openai_client = None
 
-OPENAI_MODEL = "gpt-4o"  # or your preferred model
+OPENAI_MODEL = "gpt-3.5-turbo"  # or your preferred model
 
 def _ensure_initialized():
     """Ensure Phoenix and OpenAI client are initialized."""
