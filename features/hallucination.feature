@@ -5,4 +5,3 @@ Feature: Prevent Hallucinated Book Recommendations
     When the system replies
     Then it should not invent book titles or authors
 
-

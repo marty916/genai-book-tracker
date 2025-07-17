@@ -1,40 +1,50 @@
 import os
-from typing import Dict, Optional
-from src.observation.phoenix_utils import setup_phoenix, get_openai_client
-
+from typing import Dict
 from dotenv import load_dotenv
+from src.llm_client import LLMClient
+from src.observation.phoenix_utils import setup_phoenix
+from src.observation.evaluator import HallucinationEvaluation
 
 # Load environment variables from server/.env
-load_dotenv('server/.env')
+load_dotenv()
 
-# Initialize these as None, set them up on first use
+print("OPENAI_API_KEY:", os.getenv("OPENAI_API_KEY"))
+
+# Model names
+USER_MODEL = "gpt-3.5-turbo"
+EVAL_MODEL = "gpt-4o"
+
+# Singleton for Phoenix setup
 _tracer_provider = None
-_openai_client = None
 
-OPENAI_MODEL = "gpt-3.5-turbo"  # or your preferred model
+# Singleton for LLM client
+_llm_client = None
 
 def _ensure_initialized():
-    """Ensure Phoenix and OpenAI client are initialized."""
-    global _tracer_provider, _openai_client
+    global _tracer_provider, _llm_client
     if _tracer_provider is None:
         _tracer_provider = setup_phoenix()
-    if _openai_client is None:
-        _openai_client = get_openai_client()
-    return _openai_client
+    if _llm_client is None:
+        _llm_client = LLMClient(
+            api_key=os.getenv("OPENAI_API_KEY"),
+            model=USER_MODEL
+        )
+    return _llm_client
 
 def ask_llm(prompt: str) -> str:
-    openai_client = _ensure_initialized()
-    response = openai_client.chat.completions.create(
-        model=OPENAI_MODEL,
+    llm_client = _ensure_initialized()
+    return llm_client.chat(
         messages=[{"role": "user", "content": prompt}],
         max_tokens=256,
         temperature=0.7,
     )
-    answer = response.choices[0].message.content.strip()
-    return answer
 
 def get_book_response(user_query: str) -> Dict:
     prompt = f"A user requests a book on '{user_query}'. Reply with book suggestions, but do not invent book titles or authors. Suggest related, real topics if possible."
     response = ask_llm(prompt)
     # Phoenix instrumentation will automatically log/traces this interaction
     return {"response": response}
+
+def evaluate_hallucination(query: str, response: str, reference: str) -> dict:
+    evaluator = HallucinationEvaluation(api_key=os.getenv("OPENAI_API_KEY"))
+    return evaluator.evaluate(query, response, reference)
