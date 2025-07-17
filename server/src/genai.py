@@ -8,8 +8,6 @@ from src.observation.evaluator import HallucinationEvaluation
 # Load environment variables from server/.env
 load_dotenv()
 
-print("OPENAI_API_KEY:", os.getenv("OPENAI_API_KEY"))
-
 # Model names
 USER_MODEL = "gpt-3.5-turbo"
 EVAL_MODEL = "gpt-4o"

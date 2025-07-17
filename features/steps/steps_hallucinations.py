@@ -39,7 +39,7 @@ def step_then_no_invented_titles_or_authors(context):
     eval_data = pd.DataFrame({
         "input": [context.user_query],
         "output": [context.llm_response],
-        "reference": ["There are no actual books specifically about 'quantum gardening' as it is a fictional concept. Any book recommendations should acknowledge this and suggest related real topics like quantum physics, gardening, or the intersection of science and nature."]
+        "reference": ["There are no actual books specifically about 'quantum gardening' as it is a fictional concept. Any book recommendations should acknowledge this."]
     })
     
     # Run the hallucination evaluation
@@ -49,22 +49,15 @@ def step_then_no_invented_titles_or_authors(context):
         provide_explanation=True
     )[0]
     
-    # Get the hallucination label and score
     # Phoenix hallucination evaluator returns a label column with values "factual" or "hallucinated"
     hallucination_label = hallucination_eval_df["label"].iloc[0]
-    
-    # For passing the test, we want the response to be labeled as "factual" (not hallucinated)
-    # Convert label to score: "factual" = 1.0, "hallucinated" = 0.0
-    hallucination_score = 1.0 if hallucination_label == "factual" else 0.0
     
     # Get the explanation if available
     explanation = hallucination_eval_df.get("explanation", pd.Series([None])).iloc[0]
     
-    # Assert that the score is above 0.8 (which means it should be "factual")
-    assert hallucination_score > 0.8, (
-        f"Response was evaluated as hallucinated (score: {hallucination_score}). "
+    # Assert that the label is "factual" (which means it should be "factual")
+    assert hallucination_label == "factual", (
         f"Label: {hallucination_label}. "
         f"Explanation: {explanation}. "
         f"Response: {context.llm_response}"
     )
-
