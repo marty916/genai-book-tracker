@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from behave import given, when, then
 import requests
 import re
