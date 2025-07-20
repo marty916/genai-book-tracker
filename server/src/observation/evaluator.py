@@ -13,7 +13,7 @@ class HallucinationEvaluation:
 
     def evaluate(self, query: str, response: str, reference: str) -> dict:
         eval_data = pd.DataFrame({
-            "input": [query],
+            "input": [query], 
             "output": [response],
             "reference": [reference]
         })

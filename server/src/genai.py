@@ -43,6 +43,3 @@ def get_book_response(user_query: str) -> Dict:
     # Phoenix instrumentation will automatically log/traces this interaction
     return {"response": response}
 
-def evaluate_hallucination(query: str, response: str, reference: str) -> dict:
-    evaluator = HallucinationEvaluation(api_key=os.getenv("OPENAI_API_KEY"))
-    return evaluator.evaluate(query, response, reference)
