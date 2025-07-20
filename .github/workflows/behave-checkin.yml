@@ -37,7 +37,7 @@ jobs:
         
       - name: Run Behave checkin tests
         run: |
-          cd server
+          cd features
           behave --tags=checkin
         
       - name: Upload test results
