@@ -1,9 +1,9 @@
 import os
 from typing import Dict
 from dotenv import load_dotenv
-from src.llm_client import LLMClient
-from src.observation.phoenix_utils import setup_phoenix
-from src.observation.evaluator import HallucinationEvaluation
+from ..app.llm_client import LLMClient
+from ..observation.phoenix_utils import setup_phoenix
+from ..observation.evaluator import HallucinationEvaluation
 
 # Load environment variables from server/.env
 load_dotenv()
@@ -38,7 +38,10 @@ def ask_llm(prompt: str) -> str:
     )
 
 def get_book_response(user_query: str) -> Dict:
-    prompt = f"A user requests a book on '{user_query}'. Reply with book suggestions, but do not invent book titles or authors. Suggest related, real topics if possible."
+    ## prompt = f"A user requests a book on '{user_query}'. Reply with book suggestions, but do not invent book titles or authors. ## Suggest related, real topics if possible."
+    
+    prompt = f"A user requests book recommendations on '{user_query}'. Provide only real, existing books and authors related to this topic. If no matching books are found, clearly inform the user that no matching books were found. Do not create fictitious titles or authors."
+    
     response = ask_llm(prompt)
     # Phoenix instrumentation will automatically log/traces this interaction
     return {"response": response}

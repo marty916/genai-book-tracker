@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Query
 from pydantic import BaseModel
-from src.genai import get_book_response
+from src.app.genai import get_book_response
 
 app = FastAPI()
 

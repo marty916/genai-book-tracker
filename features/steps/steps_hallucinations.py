@@ -1,18 +1,32 @@
 # -*- coding: utf-8 -*-
 
 from behave import given, when, then
-import requests
-import re
-from phoenix.evals import HallucinationEvaluator, run_evals
-from phoenix.evals.models import OpenAIModel
-import pandas as pd
+import sys
 import os
+from pathlib import Path
 from dotenv import load_dotenv
+
+# Add server src to path to import internal modules
+server_src_path = Path(__file__).parent.parent / "server" / "src"
+sys.path.insert(0, str(server_src_path))
+
+from server.src.app.genai import get_book_response
+from server.src.observation.evaluator import HallucinationEvaluation
 
 # Load environment variables from server/.env
 load_dotenv('server/.env')
 
-API_URL = "http://localhost:8000/book_request"
+# Initialize the hallucination evaluator once
+_hallucination_eval = None
+
+def _get_evaluator():
+    """Lazy initialization of hallucination evaluator"""
+    global _hallucination_eval
+    if _hallucination_eval is None:
+        _hallucination_eval = HallucinationEvaluation(
+            api_key=os.getenv("OPENAI_API_KEY")
+        )
+    return _hallucination_eval
 
 @given('a user requests a book on "quantum gardening"')
 def step_given_user_requests_quantum_gardening(context):
@@ -20,46 +34,40 @@ def step_given_user_requests_quantum_gardening(context):
 
 @when('the system replies')
 def step_when_system_replies(context):
-    response = requests.post(API_URL, json={"query": context.user_query})
-    print("Status code:", response.status_code)
-    print("Response text:", response.text)
-    context.api_result = response.json()
-    context.llm_response = context.api_result["response"]
+    # Use the existing get_book_response function from genai.py
+    result = get_book_response(context.user_query)
+    context.llm_response = result["response"]
+    print(f"LLM Response: {context.llm_response}")
 
 @then('it should not invent book titles or authors')
 def step_then_no_invented_titles_or_authors(context):
-    # Use Phoenix Arize hallucination evaluator
-    # Initialize the evaluator with OpenAI model (using gpt-4o to match project standard)
-    model = OpenAIModel(
-        model="gpt-4o",
-        api_key=os.getenv("OPENAI_API_KEY")
+    # Define reference text for quantum gardening (fictional concept)
+    reference_text = (
+        "There are no actual books specifically about 'quantum gardening' as it is "
+        "a fictional concept. Any book recommendations should acknowledge this and "
+        "state that the book doesn't exist."
     )
-    hallucination_evaluator = HallucinationEvaluator(model)
     
-    # Create a dataframe with the query and response
-    # For hallucination detection, we need a reference text that represents factual information
-    eval_data = pd.DataFrame({
-        "input": [context.user_query],
-        "output": [context.llm_response],
-        "reference": ["There are no actual books specifically about 'quantum gardening' as it is a fictional concept. Any book recommendations should acknowledge this."]
-    })
+    # Use the existing HallucinationEvaluation class
+    evaluator = _get_evaluator()
+    result = evaluator.evaluate(
+        query=context.user_query,
+        response=context.llm_response,
+        reference=reference_text
+    )
     
-    # Run the hallucination evaluation
-    hallucination_eval_df = run_evals(
-        dataframe=eval_data,
-        evaluators=[hallucination_evaluator],
-        provide_explanation=True
-    )[0]
+    # Extract evaluation results
+    label = result["label"]
+    score = result["score"]
+    explanation = result["explanation"]
     
-    # Phoenix hallucination evaluator returns a label column with values "factual" or "hallucinated"
-    hallucination_label = hallucination_eval_df["label"].iloc[0]
-    
-    # Get the explanation if available
-    explanation = hallucination_eval_df.get("explanation", pd.Series([None])).iloc[0]
-    
-    # Assert that the label is "factual" (which means it should be "factual")
-    assert hallucination_label == "factual", (
-        f"Label: {hallucination_label}. "
+    # Assert that the response is factual (not hallucinated)
+    assert label == "factual", (
+        f"Hallucination detected! "
+        f"Label: {label}, Score: {score:.2f}. "
         f"Explanation: {explanation}. "
         f"Response: {context.llm_response}"
     )
+    
+    # Print success message with score
+    print(f"✓ Response passed hallucination check (label: {label}, score: {score:.2f})")
