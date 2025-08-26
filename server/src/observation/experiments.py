@@ -2,6 +2,7 @@ from phoenix.evals import HallucinationEvaluator, QAEvaluator, OpenAIModel
 from phoenix.experiments import run_experiment
 from phoenix.datasets import Dataset
 import pandas as pd
+from pandas import DataFrame
 
 class EvalExperimentation:
     
@@ -13,24 +14,12 @@ class EvalExperimentation:
         ]
         self.task = lambda ex: {"output": call_llm(ex["input"])}
         
-    def experiment(self, dataset: Dataset, task: callable, evaluators: list, experiment_name: str):
+    def experiment(self, df: DataFrame, task: callable, evaluators: list, experiment_name: str):
+        
+        dataset = Dataset.from_pandas(df)
         return run_experiment(
             dataset=dataset,
             task=task,
             evaluators=evaluators,
-            experiment_name="Nightly Eval Experiment"
+            experiment_name=experiment_name
         )
-        
-        
-df = pd.read_csv("test_set.csv")
-dataset = Dataset.from_pandas(df)
-experiment = run_experiment(
-    dataset=dataset,
-    task=lambda ex: {"output": call_llm(ex["input"])},
-    evaluators=[
-        HallucinationEvaluator(OpenAIModel("gpt-4")),
-        QAEvaluator(OpenAIModel("gpt-4"))
-    ],
-    experiment_name="Nightly Eval Experiment"
-)
-results_df = experiment.get_evaluations()
